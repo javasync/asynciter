@@ -1,3 +1,6 @@
+# Exclude file containing private user API key
+lastfmapikey.txt
+
 # Logs
 logs
 *.log

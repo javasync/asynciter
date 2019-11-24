@@ -9,6 +9,7 @@
   "author": "Miguel Gamboa",
   "license": "ISC",
   "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.7.0",
     "@babel/plugin-transform-modules-commonjs": "^7.7.0",
     "@types/jest": "^24.0.23",
     "jest": "^24.9.0"
@@ -17,9 +18,13 @@
     "env": {
       "test": {
         "plugins": [
-          "@babel/plugin-transform-modules-commonjs"
+          "@babel/plugin-transform-modules-commonjs",
+          "@babel/plugin-proposal-class-properties"
         ]
       }
     }
+  },
+  "dependencies": {
+    "request": "^2.88.0"
   }
 }
