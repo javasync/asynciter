@@ -26,6 +26,10 @@ module.exports = {
   // The directory where Jest should output its coverage files
   coverageDirectory: "coverage",
 
+  // A number limiting the number of tests that are allowed
+  // to run at the same time when using test.concurrent
+  maxConcurrency: 1,
+
   // An array of regexp pattern strings used to skip coverage collection
   // coveragePathIgnorePatterns: [
   //   "\\\\node_modules\\\\"
