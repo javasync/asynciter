@@ -10,12 +10,12 @@ const electric = [
 test('Playlist insert, find and delete', done => {
     const expected = new Playlist('gamboa', 'metal', 'All hard rock musics')
     dao.insert(expected, (err) => {
-        expect(err).toBeNull()
+        expect(err).not.toBeTruthy()
         dao.findById('gamboa', 'metal', (err, actual) => {
-            expect(err).toBeNull()
+            expect(err).not.toBeTruthy()
             expect(actual).toEqual(expected)
             dao.remove('gamboa', 'metal', (err) => {
-                expect(err).toBeNull()
+                expect(err).not.toBeTruthy()
                 done()
             })
         })

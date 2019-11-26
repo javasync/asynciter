@@ -1,10 +1,27 @@
 import * as dao from './../lib/dao/track-dao'
 import * as repo from './../lib/repo/track-repo'
 
-test('Get Starlight from Repository and check it via Dao', (done) => {
+test('Get Atomic track from Repository via Dao', (done) => {
+    const atomic = '66083e09-9486-43f7-98c4-8253c9a5da58'
+    repo.findById(atomic, (err, track) => {
+        expect(err).not.toBeTruthy()
+        expect(track.name).toEqual('Atomic')
+        done()
+    })
+})
+
+test('Getting illegal mbid from Repository raises an error', (done) => {
+    const atomic = 'lksajljdfl-adlfadlçj'
+    repo.findById(atomic, err => {
+        expect(err).toBeTruthy()
+        done()
+    })
+})
+
+test('Get Starlight from Repository, check it via Dao but fectch it from the Web', (done) => {
     const starlight = '60e94685-0481-4d3d-bd84-11c389d9b2a5'
     /**
-     * 1. DB is empty and no track is returned.
+     * 1. Confirm that DB is empty and no track is returned.
      */
     dao.findById(starlight, (err) => {
         expect(err).toBeTruthy()
