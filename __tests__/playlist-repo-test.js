@@ -24,48 +24,40 @@ const electric = {
     }
 }
 
-describe('playlist-repo', () => {
-    it('Check tracks from gamboa electric playlist', done => {
-        repo.getTracks('gamboa', 'electric', (err, arr) => {
-            expect(err).not.toBeTruthy()
-            let count = 0
-            arr.forEach(track => {
-                const expected = electric[track.mbid]
-                expect(expected.name).toEqual(track.name)
-                expect(expected.duration).toEqual(track.duration)
-                expect(expected.artist.name).toEqual(track.artist.name)
-                expect(expected.album.title).toEqual(track.album.title)
-                count++
-            })
-            expect(count).toEqual(arr.length)
-            done()
-        })
+it('Check tracks from gamboa electric playlist', async () => {
+    const plst = await repo.findById('gamboa', 'electric')
+    const arr = await plst.tracks
+    let count = 0
+    arr.forEach(track => {
+        const expected = electric[track.mbid]
+        expect(expected.name).toEqual(track.name)
+        expect(expected.duration).toEqual(track.duration)
+        expect(expected.artist.name).toEqual(track.artist.name)
+        expect(expected.album.title).toEqual(track.album.title)
+        count++
     })
-    
-    it('Insert a new track into a new playlist', done => {
-        /**
-         * Black track from Pearl Jam
-         */
-        const black = '8821d2ea-2854-44fc-b14f-007b507da034'
-        repo.addTrack('gamboa', 'grunge', black, err => {
-            expect(err).not.toBeTruthy()
-            repo.getTracks('gamboa', 'grunge', (err, tracks) => {
-                expect(err).not.toBeTruthy()
-                expect(tracks[0].name).toEqual('Black')
-                expect(fs.existsSync(playlistPath('gamboa', 'grunge'))).toBeTruthy()
-                expect(fs.existsSync(playlistTracksPath('gamboa', 'grunge'))).toBeTruthy()
-                repo.remove('gamboa', 'grunge', err => {
-                    expect(err).not.toBeTruthy()
-                    expect(fs.existsSync(playlistPath('gamboa', 'grunge'))).not.toBeTruthy()
-                    expect(fs.existsSync(playlistTracksPath('gamboa', 'grunge'))).not.toBeTruthy()
-                    daoTracks.remove(black, err => {
-                        expect(err).not.toBeTruthy()
-                        expect(fs.existsSync(trackPath(black))).not.toBeTruthy()
-                        done()
-                    })                    
-                    
-                })
-            })
-        })
-    })
+    expect(count).toEqual(arr.length)
 })
+
+it('Insert a new track into a new playlist CONCURRENTLY fetching track and creating the playlist', async () => {
+    await testAddTrack(repo.addTrack)
+})
+it('Insert a new track into a new playlist SEQUENTIALLY fetching track and creating the playlist', async () => {
+    await testAddTrack(repo.addTrackSeq)
+})
+async function testAddTrack(addTrack) {
+    /**
+     * Black track from Pearl Jam
+     */
+    const black = '8821d2ea-2854-44fc-b14f-007b507da034'
+    await addTrack('gamboa', 'grunge', black)
+    const tracks = await repo.getTracks('gamboa', 'grunge')
+    expect(tracks[0].name).toEqual('Black')
+    expect(fs.existsSync(playlistPath('gamboa', 'grunge'))).toBeTruthy()
+    expect(fs.existsSync(playlistTracksPath('gamboa', 'grunge'))).toBeTruthy()
+    await repo.remove('gamboa', 'grunge')
+    expect(fs.existsSync(playlistPath('gamboa', 'grunge'))).not.toBeTruthy()
+    expect(fs.existsSync(playlistTracksPath('gamboa', 'grunge'))).not.toBeTruthy()
+    await daoTracks.remove(black)
+    expect(fs.existsSync(trackPath(black))).not.toBeTruthy()
+}

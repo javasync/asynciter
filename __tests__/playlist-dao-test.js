@@ -7,74 +7,63 @@ const electric = [
     '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc'
 ]
 
-test('Playlist insert, find and delete', done => {
+test('Playlist insert, find and delete', async () => {
+    const enterSandman = '5cbb546d-5c1c-490e-9908-761b89dd5166'
     const expected = new Playlist('gamboa', 'metal', 'All hard rock musics')
-    dao.insert(expected, (err) => {
-        expect(err).not.toBeTruthy()
-        dao.findById('gamboa', 'metal', (err, actual) => {
-            expect(err).not.toBeTruthy()
-            expect(actual).toEqual(expected)
-            dao.remove('gamboa', 'metal', (err) => {
-                expect(err).not.toBeTruthy()
-                done()
-            })
-        })
-    })
+    await dao.insert(expected)
+    await dao.addTrack('gamboa', 'metal', enterSandman)
+    const actual = await dao.findById('gamboa', 'metal')
+    expect(actual).toEqual(expected)
+    await dao.remove('gamboa', 'metal')    
 })
 
-test('Add track to playlist, check it and remove it', done => {
+test('Add track to playlist, check it and remove it', async () => {
     const forthekill = '3d1b81ec-b87d-462c-9a50-1a587e32edb0'
     /**
      * 1. Add track forthekill to gamboa's electric playlist.
      */
-    dao.addTrack('gamboa', 'electric', forthekill, (err) => {
-        expect(err).not.toBeTruthy()
-        const expected = electric.concat([forthekill])
-        /**
-         * 2. Expect to find all former 3 tracks and the new one forthekill
-         */
-        dao.getTracks('gamboa', 'electric', (err, arr) => {
-            expect(err).not.toBeTruthy()
-            expect(arr).toEqual(expected)
-            /**
-             * 3. Remove forthekill and 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc
-             */
-            dao.removeTrack('gamboa', 'electric', '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc', err => {
-                expect(err).not.toBeTruthy()
-                dao.removeTrack('gamboa', 'electric', forthekill, err => {
-                    expect(err).not.toBeTruthy()
-                    /**
-                     * 4. Expect to find only 2 tracks. 
-                     */
-                    const suppressed = expected.filter(mbid => 
-                        mbid != '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc' && mbid != forthekill)
-                    dao.getTracks('gamboa', 'electric', (err, arr) => {
-                        expect(err).not.toBeTruthy()
-                        expect(arr).toEqual(suppressed)
-                        /**
-                         * 5. Put again the mbid 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc in the playlist
-                         */
-                        dao.addTrack('gamboa', 'electric', '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc', err => {
-                            expect(err).not.toBeTruthy()
-                            done()
-                        })                        
-                    })
-                })
-            })
-        })
-    })
+    await dao.addTrack('gamboa', 'electric', forthekill)
+    /**
+     * 2. Expect to find all former 3 tracks and the new one forthekill
+     */
+    const expected = electric.concat([forthekill])
+    let arr = await dao.getTracks('gamboa', 'electric')
+    expect(arr).toEqual(expected)
+    /**
+     * 3. Remove forthekill and 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc
+     */
+    await dao.removeTrack('gamboa', 'electric', '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc')
+    await dao.removeTrack('gamboa', 'electric', forthekill)
+    /**
+     * 4. Expect to find only 2 tracks. 
+     */
+    const suppressed = expected.filter(mbid => 
+        mbid != '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc' && 
+        mbid != forthekill)
+    arr = await dao.getTracks('gamboa', 'electric')
+    expect(arr).toEqual(suppressed)
+    /**
+     * 5. Put again the mbid 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc in the playlist
+     */
+    await dao.addTrack('gamboa', 'electric', '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc')
 })
 
-test('Check for absent playlist', (done) => {
-    dao.findById('gamboa', 'techno', err => {
+test('Check for absent playlist', async () => {
+    try {
+        await dao.findById('gamboa', 'techno')    
+    } catch (err) {
         expect(err).toBeTruthy()
-        done()
-    })
+        return
+    }
+    throw Error('The find operation succeeded unexpectedly!')
 })
 
-test('Check for tracks of absent playlist', done => {
-    dao.getTracks('gamboa', 'techno', err => {
+test('Check for tracks of absent playlist', async () => {
+    try {
+        await dao.getTracks('gamboa', 'techno')
+    } catch (err) {
         expect(err).toBeTruthy()
-        done()
-    })
+        return
+    }
+    throw Error('The find operation succeeded unexpectedly!')
 })
