@@ -27,8 +27,11 @@ test('Add track to playlist, check it and remove it', async () => {
      * 2. Expect to find all former 3 tracks and the new one forthekill
      */
     const expected = electric.concat([forthekill])
-    let arr = await dao.getTracks('gamboa', 'electric')
-    expect(arr).toEqual(expected)
+    let tracks = dao.getTracks('gamboa', 'electric')[Symbol.asyncIterator]()
+    expected.forEach(async item => {
+        const actual = await tracks.next()
+        expect(actual.value).toEqual(item)
+    })
     /**
      * 3. Remove forthekill and 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc
      */
@@ -40,8 +43,11 @@ test('Add track to playlist, check it and remove it', async () => {
     const suppressed = expected.filter(mbid => 
         mbid != '9aa2be7b-8fb0-4187-bce4-9bb4e84815fc' && 
         mbid != forthekill)
-    arr = await dao.getTracks('gamboa', 'electric')
-    expect(arr).toEqual(suppressed)
+    tracks = dao.getTracks('gamboa', 'electric')[Symbol.asyncIterator]()
+    suppressed.forEach(async item => {
+        const actual = await tracks.next()
+        expect(actual.value).toEqual(item)
+    })
     /**
      * 5. Put again the mbid 9aa2be7b-8fb0-4187-bce4-9bb4e84815fc in the playlist
      */
@@ -60,7 +66,9 @@ test('Check for absent playlist', async () => {
 
 test('Check for tracks of absent playlist', async () => {
     try {
-        await dao.getTracks('gamboa', 'techno')
+        for await(let track of dao.getTracks('gamboa', 'techno')) {
+            // Do nothing
+        }
     } catch (err) {
         expect(err).toBeTruthy()
         return
